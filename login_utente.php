@@ -15,14 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn = new mysqli("localhost", "root", "", "lostfound_db");
     if ($conn->connect_error) die("Connessione fallita");
 
-    $stmt = $conn->prepare("SELECT idUtente, password, nome FROM UTENTI WHERE email = ?");
+    $stmt = $conn->prepare("SELECT idUtente, password, nome, bannato FROM UTENTI WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        // Controllo password semplice (senza hash per ora)
-        if ($row['password'] === $password) {
+        if ($row['bannato']) {
+            $message = "Il tuo account è stato bannato. Ciao ciao.";
+        } else if ($row['password'] === $password) {
             $_SESSION['user_id'] = $row['idUtente'];
             $_SESSION['user_name'] = $row['nome'];
             header("Location: dashboard_utente.php");
