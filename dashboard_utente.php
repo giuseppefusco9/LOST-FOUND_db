@@ -19,15 +19,13 @@ if (!isset($_SESSION['user_id'])) {
     <p>Benvenuto nella tua dashboard utente.</p>
 
     <div class="button-group">
-        <button class="btn" onclick="location.href='segnala_smarrito.php'">📤 Segnala Oggetto Smarrito</button>
+        <button class="btn" onclick="location.href='invio_smarrimento.php'">📤 Segnala Oggetto Smarrito</button>
         <button class="btn" onclick="location.href='segnala_ritrovato.php'">📥 Segnala Oggetto Ritrovato</button>
         <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
         <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
         <button class="btn" onclick="location.href='portafoglio.php'">👛 Il Mio Portafoglio</button>
         <button class="btn" onclick="location.href='rispondi_domanda.php'">📝 Rispondi a Domanda di Verifica</button>
         <button class="btn" onclick="location.href='statistiche_categorie.php'">📊 Statistiche per Categorie</button>
-        <button class="btn" onclick="location.href='statistiche_luoghi.php'">📍 Statistiche per Luoghi</button>
-        <button class="btn" onclick="location.href='invia_segnalazione_smarrimento.php'">✉️ Invio Segnalazione di Smarrimento</button>
         <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
     </div>
 </div>
