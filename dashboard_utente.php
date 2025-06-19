@@ -14,21 +14,22 @@ if (!isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div class="container">
-    <h1>Ciao, <?=htmlspecialchars($_SESSION['user_name'])?>!</h1>
+<div class="container login-container">
+    <h1>Ciao, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
     <p>Benvenuto nella tua dashboard utente.</p>
 
-    <ul class="dashboard-menu">
-        <li><a href="segnala_smarrito.php">📤 Segnala Oggetto Smarrito (OP3)</a></li>
-        <li><a href="segnala_ritrovato.php">📥 Segnala Oggetto Ritrovato (OP4)</a></li>
-        <li><a href="visualizza_smarriti.php">🔍 Visualizza Oggetti Smarriti (OP5)</a></li>
-        <li><a href="visualizza_ritrovati.php">🔎 Visualizza Oggetti Ritrovati (OP6)</a></li>
-        <li><a href="portafoglio.php">👛 Il Mio Portafoglio (OP7)</a></li>
-        <li><a href="rispondi_domanda.php">📝 Rispondi a Domanda di Verifica (OP9)</a></li>
-        <li><a href="statistiche_categorie.php">📊 Statistiche per Categorie (OP12)</a></li>
-        <li><a href="statistiche_luoghi.php">📍 Statistiche per Luoghi (OP13)</a></li>
-        <li><a href="logout.php" class="btn">🔓 Logout</a></li>
-    </ul>
+    <div class="button-group">
+        <button class="btn" onclick="location.href='segnala_smarrito.php'">📤 Segnala Oggetto Smarrito</button>
+        <button class="btn" onclick="location.href='segnala_ritrovato.php'">📥 Segnala Oggetto Ritrovato</button>
+        <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
+        <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
+        <button class="btn" onclick="location.href='portafoglio.php'">👛 Il Mio Portafoglio</button>
+        <button class="btn" onclick="location.href='rispondi_domanda.php'">📝 Rispondi a Domanda di Verifica</button>
+        <button class="btn" onclick="location.href='statistiche_categorie.php'">📊 Statistiche per Categorie</button>
+        <button class="btn" onclick="location.href='statistiche_luoghi.php'">📍 Statistiche per Luoghi</button>
+        <button class="btn" onclick="location.href='invia_segnalazione_smarrimento.php'">✉️ Invio Segnalazione di Smarrimento</button>
+        <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
+    </div>
 </div>
 </body>
 </html>
