@@ -95,7 +95,10 @@ $conn->close();
         </div>
     </form>
 
-    <p><a href="dashboard_admin.php">Torna alla pagina principale</a></p>
+    <?php
+    $pagina_dashboard = ($_SESSION['ruolo'] === 'admin') ? 'dashboard_admin.php' : 'dashboard_utente.php';
+    ?>
+    <button class="btn" onclick="location.href='<?= $pagina_dashboard ?>'">🔙 Torna alla Dashboard</button>
 </div>
 </body>
 </html>

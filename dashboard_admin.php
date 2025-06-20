@@ -15,7 +15,7 @@ if (!isset($_SESSION['admin_id'])) {
 </head>
 <body>
 <div class="container login-container">
-    <h1>Ciao, <?=htmlspecialchars($_SESSION['admin_name'])?>!</h1>
+    <h1>Ciao, <?= htmlspecialchars($_SESSION['admin_name']) ?>!</h1>
     <p>Benvenuto nella dashboard amministratore.</p>
 
     <div class="button-group">
@@ -25,10 +25,10 @@ if (!isset($_SESSION['admin_id'])) {
         <button class="btn" onclick="location.href='invia_domanda_verifica.php'">❓ Invia Domanda di Verifica</button>
         <button class="btn" onclick="location.href='visualizza_domande.php'">📂 Visualizza Domande con Risposte</button>
         <button class="btn" onclick="location.href='genera_restituzione.php'">✅ Genera Restituzione Oggetto</button>
-        <button class="btn" onclick="location.href='statistiche_categorie.php'">📊 Statistiche per Categorie</button>
-        <button class="btn" onclick="location.href='statistiche_luoghi.php'">📍 Statistiche per Luoghi</button>
         <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
     </div>
+
+    <?php include 'statistiche_categorie.php'; ?>
 </div>
 </body>
 </html>
