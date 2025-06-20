@@ -1,3 +1,8 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
 .btn {
     display: inline-block;
     background-color: #007bff;
@@ -35,9 +40,15 @@
     margin-bottom: 15px;
 }
 
+.success {
+    color: green;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
 .login-container {
-    max-width: 400px;
-    margin: 100px auto;
+    max-width: 800px;
+    margin: 50px auto;
     background: white;
     padding: 25px;
     border-radius: 10px;
@@ -45,8 +56,21 @@
     text-align: center;
 }
 
-.login-container form label {
-    display: block;
-    text-align: left;
-    margin-bottom: 10px;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr.selected {
+    background-color: #d1ecf1;
 }
