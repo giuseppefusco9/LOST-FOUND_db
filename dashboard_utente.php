@@ -33,6 +33,7 @@ $conn->close();
 </head>
 <body>
 <div class="container login-container">
+
     <h1>Ciao, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h1>
     <p>Benvenuto nella tua dashboard utente.</p>
 
@@ -46,16 +47,30 @@ $conn->close();
         <p class="error">Nessun portafoglio associato.</p>
     <?php endif; ?>
 
-    <div class="button-group">
-        <button class="btn" onclick="location.href='invio_smarrimento.php'">📤 Segnala Oggetto Smarrito</button>
-        <button class="btn" onclick="location.href='segnala_ritrovato.php'">📥 Segnala Oggetto Ritrovato</button>
-        <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
-        <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
-        <button class="btn" onclick="location.href='rispondi_domanda.php'">📝 Rispondi a Domanda di Verifica</button>
-        <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
+    <div class="dashboard-flex">
+        <div class="button-group">
+            <button class="btn" onclick="location.href='invio_smarrimento.php'">📤 Segnala Oggetto Smarrito</button>
+            <button class="btn" onclick="location.href='segnala_ritrovato.php'">📥 Segnala Oggetto Ritrovato</button>
+            <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
+            <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
+            <button class="btn" onclick="location.href='rispondi_domanda.php'">📝 Rispondi a Domanda di Verifica</button>
+            <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
+        </div>
     </div>
-
-    <?php include 'statistiche_categorie.php'; ?>
+</div>
+<div class="container login-container">
+    <div class="dashboard-flex">
+        <div class="statistics-wrapper">
+            <?php include 'statistiche_categorie.php'; ?>
+        </div>
+    </div>
+</div>
+<div class="container login-container">
+    <div class="dashboard-flex">
+        <div class="statistics-wrapper">
+            <?php include 'statistiche_luoghi.php'; ?>
+        </div>
+    </div>
 </div>
 </body>
 </html>

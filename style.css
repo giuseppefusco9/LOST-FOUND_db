@@ -3,12 +3,6 @@ body {
     background-color: #f4f4f4;
 }
 
-canvas {
-    display: block;
-    margin: 0 auto;
-    max-width: 100%;
-}
-
 .btn {
     display: inline-block;
     background-color: #007bff;
