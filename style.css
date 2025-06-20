@@ -1,13 +1,14 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
+    font-size: 14px;
 }
 
 .btn {
     display: inline-block;
     background-color: #007bff;
     color: white;
-    padding: 10px 20px;
+    padding: 7px 15px;
     margin: 5px 0;
     border-radius: 5px;
     text-decoration: none;
@@ -47,10 +48,10 @@ body {
 }
 
 .login-container {
-    max-width: 800px;
-    margin: 50px auto;
+    max-width: 700px;
+    margin: 30px auto;
+    padding: 15px;
     background: white;
-    padding: 25px;
     border-radius: 10px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.15);
     text-align: center;
@@ -63,7 +64,7 @@ table {
 }
 
 th, td {
-    padding: 12px;
+    padding: 8px;
     border: 1px solid #ddd;
 }
 
