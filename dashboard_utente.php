@@ -5,15 +5,13 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Recupera informazioni portafoglio
 $conn = new mysqli("localhost", "root", "", "lostfound_db");
 if ($conn->connect_error) die("Connessione fallita");
 
 $stmt = $conn->prepare("
-    SELECT P.IBAN, P.saldo
-    FROM UTENTI U
-    LEFT JOIN PORTAFOGLI P ON U.IBAN = P.IBAN
-    WHERE U.idUtente = ?
+    SELECT IBAN, saldo
+    FROM PORTAFOGLI
+    WHERE IdUtente = ?
 ");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
@@ -50,7 +48,7 @@ $conn->close();
     <div class="dashboard-flex">
         <div class="button-group">
             <button class="btn" onclick="location.href='invio_smarrimento.php'">📤 Segnala Oggetto Smarrito</button>
-            <button class="btn" onclick="location.href='segnala_ritrovato.php'">📥 Segnala Oggetto Ritrovato</button>
+            <button class="btn" onclick="location.href='invio_ritrovamento.php'">📥 Segnala Oggetto Ritrovato</button>
             <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
             <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
             <button class="btn" onclick="location.href='rispondi_domanda.php'">📝 Rispondi a Domanda di Verifica</button>
