@@ -51,7 +51,7 @@ $conn->close();
             <button class="btn" onclick="location.href='invio_ritrovamento.php'">📥 Segnala Oggetto Ritrovato</button>
             <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
             <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
-            <button class="btn" onclick="location.href='rispondi_domanda.php'">📝 Rispondi a Domanda di Verifica</button>
+            <button class="btn" onclick="location.href='invio_risposta.php'">📝 Rispondi a Domanda di Verifica</button>
             <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
         </div>
     </div>
