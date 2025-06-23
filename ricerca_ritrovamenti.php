@@ -1,6 +1,10 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
+
+$isUser = isset($_SESSION['user_id']);
+$isAdmin = isset($_SESSION['admin_id']);
+
+if (!$isUser && !$isAdmin) {
     header("Location: login_utente.php");
     exit;
 }
@@ -35,6 +39,7 @@ $stmt = $conn->prepare("
 $stmt->bind_param("ss", $tipo_luogo, $tipo_categoria);
 $stmt->execute();
 $result = $stmt->get_result();
+$userType = $isAdmin ? 'admin' : 'user';
 ?>
 
 <!DOCTYPE html>
@@ -99,8 +104,9 @@ $result = $stmt->get_result();
     <?php else: ?>
         <p>Nessuna segnalazione trovata.</p>
     <?php endif; ?>
-    <a href="dashboard_utente.php" class="btn" type="submit">Torna alla Dashboard</a>
 
+    $userType = $isAdmin ? 'admin' : 'user';
+    <a href="dashboard_<?= $userType ?>.php" class="btn" type="submit">Torna alla Dashboard</a>
 <?php
 $stmt->close();
 $conn->close();

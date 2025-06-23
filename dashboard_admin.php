@@ -22,8 +22,8 @@ if (!isset($_SESSION['admin_id'])) {
     <div class="dashboard-flex">
         <div class="button-group">
             <button class="btn" onclick="location.href='ban_utente.php'">🚫 Banna Utente</button>
-            <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
-            <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
+            <button class="btn" onclick="location.href='ricerca_smarrimenti.php'">🔍 Visualizza Oggetti Smarriti</button>
+            <button class="btn" onclick="location.href='ricerca_ritrovamenti.php'">🔎 Visualizza Oggetti Ritrovati</button>
             <button class="btn" onclick="location.href='invio_domanda.php'">❓ Invia Domanda di Verifica</button>
             <button class="btn" onclick="location.href='domanda_risposta.php'">📂 Visualizza Domande con Risposte</button>
             <button class="btn" onclick="location.href='genera_restituzione.php'">✅ Genera Restituzione Oggetto</button>
