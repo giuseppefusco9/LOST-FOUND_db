@@ -9,9 +9,10 @@ $conn = new mysqli("localhost", "root", "", "lostfound_db");
 if ($conn->connect_error) die("Connessione fallita");
 
 $stmt = $conn->prepare("
-    SELECT IBAN, saldo
-    FROM PORTAFOGLI
-    WHERE IdUtente = ?
+    SELECT P.IBAN, P.saldo
+    FROM UTENTI U
+    JOIN PORTAFOGLI P ON U.IBAN = P.IBAN
+    WHERE U.IdUtente = ?
 ");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
@@ -49,8 +50,8 @@ $conn->close();
         <div class="button-group">
             <button class="btn" onclick="location.href='invio_smarrimento.php'">📤 Segnala Oggetto Smarrito</button>
             <button class="btn" onclick="location.href='invio_ritrovamento.php'">📥 Segnala Oggetto Ritrovato</button>
-            <button class="btn" onclick="location.href='visualizza_smarriti.php'">🔍 Visualizza Oggetti Smarriti</button>
-            <button class="btn" onclick="location.href='visualizza_ritrovati.php'">🔎 Visualizza Oggetti Ritrovati</button>
+            <button class="btn" onclick="location.href='ricerca_smarrimenti.php'">🔍 Visualizza Oggetti Smarriti</button>
+            <button class="btn" onclick="location.href='ricerca_ritrovamenti.php'">🔎 Visualizza Oggetti Ritrovati</button>
             <button class="btn" onclick="location.href='invio_risposta.php'">📝 Rispondi a Domanda di Verifica</button>
             <button class="btn" onclick="location.href='logout.php'">🔓 Logout</button>
         </div>
