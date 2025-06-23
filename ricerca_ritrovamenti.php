@@ -105,7 +105,6 @@ $userType = $isAdmin ? 'admin' : 'user';
         <p>Nessuna segnalazione trovata.</p>
     <?php endif; ?>
 
-    $userType = $isAdmin ? 'admin' : 'user';
     <a href="dashboard_<?= $userType ?>.php" class="btn" type="submit">Torna alla Dashboard</a>
 <?php
 $stmt->close();
