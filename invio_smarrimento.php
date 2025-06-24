@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="btn">Invia Segnalazione</button>
     </form>
 
-    <p><a href="dashboard.php">← Torna alla Dashboard</a></p>
+    <p><a href="dashboard.php">Torna alla Dashboard</a></p>
 </div>
 </body>
 </html>

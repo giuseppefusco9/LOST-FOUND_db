@@ -95,7 +95,7 @@ $conn->close();
         </div>
     </form>
 
-    <button class="btn" onclick="location.href='dashboard_admin.php'">🔙 Torna alla Dashboard</button>
+    <button class="btn" onclick="location.href='dashboard_admin.php'">Torna alla Dashboard</button>
 </div>
 </body>
 </html>
