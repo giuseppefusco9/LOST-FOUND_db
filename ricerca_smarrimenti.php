@@ -95,6 +95,9 @@ $userType = $isAdmin ? 'admin' : 'utente';
         <div class="segnalazioni-list">
             <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="segnalazione-item">
+                    <?php if ($isAdmin): ?>
+                        <strong>ID Segnalazione:</strong> <?= htmlspecialchars($row['idSegnalazione']) ?> |
+                    <?php endif; ?>
                     <strong>Luogo:</strong> <?= htmlspecialchars($row['tipoLuogo']) ?> |
                     <strong>Categoria:</strong> <?= htmlspecialchars($row['tipoCategoria']) ?> |
                     <strong>Data:</strong> <?= htmlspecialchars($row['data']) ?> |
