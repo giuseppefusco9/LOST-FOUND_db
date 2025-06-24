@@ -9,9 +9,9 @@ $conn = new mysqli("localhost", "root", "", "lostfound_db");
 if ($conn->connect_error) die("Connessione fallita");
 
 $stmt = $conn->prepare("
-    SELECT P.IBAN, P.saldo
-    FROM UTENTI U
-    JOIN PORTAFOGLI P ON U.IBAN = P.IBAN
+    SELECT IBAN, saldo
+    FROM UTENTI U JOIN PORTAFOGLI P
+    ON U.idUtente = P.idUtente
     WHERE U.IdUtente = ?
 ");
 $stmt->bind_param("i", $_SESSION['user_id']);

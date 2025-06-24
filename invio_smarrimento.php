@@ -13,191 +13,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($conn->connect_error) {
         die("Connessione fallita: " . $conn->connect_error);
     }
+
     $conn->autocommit(false);
 
-    // Input sanitization
-    $idUtente           = $_SESSION['user_id'];
-    $indirizzo          = trim($_POST['indirizzo'] ?? '');
-    $cap                = trim($_POST['cap'] ?? '');
-    $citta              = trim($_POST['citta'] ?? '');
-    $descrizione        = trim($_POST['descrizione'] ?? '');
-    $categoria          = (int)($_POST['categoria'] ?? 0);
-    $descrizioneOggetto = trim($_POST['descrizioneOggetto'] ?? '');
-    $ricompensaRaw      = str_replace(',', '.', trim($_POST['ricompensa'] ?? ''));
-    $ricompensa         = ($ricompensaRaw !== '' && is_numeric($ricompensaRaw))
-                           ? (float)$ricompensaRaw
-                           : null;
+    $idUtente    = $_SESSION['user_id'];
+    $indirizzo   = $conn->real_escape_string($_POST['indirizzo'] ?? '');
+    $cap         = $conn->real_escape_string($_POST['cap'] ?? '');
+    $descrizione = $conn->real_escape_string($_POST['descrizione'] ?? '');
+    $categoria   = (int)($_POST['categoria'] ?? 0);
 
-    // Validazioni di base
-    if ($indirizzo === '' || $cap === '' || $citta === '' 
-        || $descrizione === '' || $categoria <= 0 || $descrizioneOggetto === '') {
-        $message = "Tutti i campi obbligatori devono essere compilati.";
-    } elseif (!preg_match('/^[0-9]{5}$/', $cap)) {
-        $message = "Il CAP deve essere di 5 cifre.";
-    } elseif (!isset($_FILES['foto']) || count($_FILES['foto']['name']) === 0) {
-        $message = "È obbligatorio caricare almeno una foto valida.";
+    if ($indirizzo === '' || $cap === '' || $descrizione === '' || $categoria <= 0) {
+        $message = "Tutti i campi sono obbligatori.";
+    } elseif (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
+        $message = "È obbligatorio caricare una foto.";
     }
 
-    // Preparazione cartella upload
-    $uploadDir = __DIR__ . '/foto/foto_smarrimenti/';
     if (empty($message)) {
-        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
-            $message = "Impossibile creare la cartella per l'upload.";
-        } elseif (!is_writable($uploadDir)) {
-            $message = "La cartella di destinazione non è scrivibile.";
+        $data = date('Y-m-d');
+        $ora  = date('H:i:s');
+        $stato = 'In attesa';
+        $tipo  = 'Smarrimento';
+
+        $uploadDir = 'foto/foto_smarrimenti/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
         }
-    }
 
-    // Gestione file multipli
-    $uploadedFotoNames = [];
-    if (empty($message)) {
-        $fotoFiles = $_FILES['foto'];
-        $numFiles = count($fotoFiles['name']);
+        $originalName = basename($_FILES['foto']['name']);
+        $fotoName = uniqid('img_', true) . '_' . $originalName;
+        $fotoTmp = $_FILES['foto']['tmp_name'];
+        $fotoDest = $uploadDir . $fotoName;
 
-        for ($i = 0; $i < $numFiles; $i++) {
-            if ($fotoFiles['error'][$i] !== UPLOAD_ERR_OK) {
-                $message = "Errore nel caricamento di una delle foto.";
-                break;
-            }
-
-            $originalName = basename($fotoFiles['name'][$i]);
-            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            $allowedExt = ['jpg','jpeg','png','gif','webp'];
-            if (!in_array($ext, $allowedExt, true)) {
-                $message = "Estensione non consentita per una delle foto.";
-                break;
-            }
-
-            $fotoTmp = $fotoFiles['tmp_name'][$i];
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mime = $finfo->file($fotoTmp);
-            $allowedMime = ['image/jpeg','image/png','image/gif','image/webp'];
-            if (!in_array($mime, $allowedMime, true)) {
-                $message = "Formato immagine non valido per una delle foto.";
-                break;
-            }
-
-            $fotoName = uniqid('img_', true) . '.' . $ext;
-            $fotoDest = $uploadDir . $fotoName;
-
-            if (!move_uploaded_file($fotoTmp, $fotoDest)) {
-                $message = "Errore nel salvataggio di una delle foto.";
-                break;
-            }
-
-            $uploadedFotoNames[] = $fotoName;
-        }
-    }
-
-    // Inserimenti su DB
-    if (empty($message)) {
-        try {
-            // Controlla o inserisci luogo
-            $stmtLuogo = $conn->prepare(
-                "SELECT COUNT(*) FROM LUOGHI WHERE indirizzo = ? AND cap = ?"
-            );
-            $stmtLuogo->bind_param("ss", $indirizzo, $cap);
-            $stmtLuogo->execute();
-            $stmtLuogo->bind_result($countLuogo);
-            $stmtLuogo->fetch();
-            $stmtLuogo->close();
-
-            if ($countLuogo == 0) {
-                $stmtInsertLuogo = $conn->prepare(
-                    "INSERT INTO LUOGHI (indirizzo, cap, citta) VALUES (?, ?, ?)"
-                );
-                $stmtInsertLuogo->bind_param("sss", $indirizzo, $cap, $citta);
-                if (!$stmtInsertLuogo->execute()) {
-                    throw new Exception($stmtInsertLuogo->error);
+        if (move_uploaded_file($fotoTmp, $fotoDest)) {
+            try {
+                $stmtFoto = $conn->prepare("INSERT INTO FOTO (nomeFoto) VALUES (?)");
+                $stmtFoto->bind_param("s", $fotoName);
+                if (!$stmtFoto->execute()) {
+                    throw new Exception("Errore inserimento foto: " . $stmtFoto->error);
                 }
-                $stmtInsertLuogo->close();
-            }
+                $idFoto = $stmtFoto->insert_id;
+                $stmtFoto->close();
 
-            // Controlla che la categoria esista davvero (per foreign key)
-            $stmtCat = $conn->prepare("SELECT COUNT(*) FROM CATEGORIE WHERE idCategoria = ?");
-            $stmtCat->bind_param("i", $categoria);
-            $stmtCat->execute();
-            $stmtCat->bind_result($catExists);
-            $stmtCat->fetch();
-            $stmtCat->close();
-
-            if ($catExists == 0) {
-                throw new Exception("Categoria selezionata non esiste.");
-            }
-
-            // Inserisci oggetto
-            $stmtObj = $conn->prepare(
-                "INSERT INTO OGGETTI (descrizioneOggetto, idCategoria) VALUES (?, ?)"
-            );
-            $stmtObj->bind_param("si", $descrizioneOggetto, $categoria);
-            if (!$stmtObj->execute()) throw new Exception($stmtObj->error);
-            $idOggetto = $stmtObj->insert_id;
-            $stmtObj->close();
-
-            // Inserisci ricompensa (se presente)
-            $idRicompensa = null;
-            if ($ricompensa !== null) {
-                $stmtRic = $conn->prepare(
-                    "INSERT INTO RICOMPENSE (importo) VALUES (?)"
+                $stmtSegn = $conn->prepare("
+                    INSERT INTO SEGNALAZIONI
+                      (idUtente, indirizzo, cap, data, ora, descrizioneSegnalazione, stato, tipoSegnalazione, idFoto, idRicompensa, idOggetto)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)
+                ");
+                $stmtSegn->bind_param(
+                    "isssssssi",
+                    $idUtente, $indirizzo, $cap, $data, $ora,
+                    $descrizione, $stato, $tipo, $idFoto
                 );
-                $stmtRic->bind_param("d", $ricompensa);
-                if (!$stmtRic->execute()) throw new Exception($stmtRic->error);
-                $idRicompensa = $stmtRic->insert_id;
-                $stmtRic->close();
+                if (!$stmtSegn->execute()) {
+                    throw new Exception("Errore inserimento segnalazione: " . $stmtSegn->error);
+                }
+                $stmtSegn->close();
+
+                $conn->commit();
+                $success = "Segnalazione inviata con successo!";
+            } catch (Exception $e) {
+                $conn->rollback();
+                $message = $e->getMessage();
+                // opzionale: elimina il file salvato in caso di errore
+                if (file_exists($fotoDest)) {
+                    unlink($fotoDest);
+                }
             }
-
-            // Inserisci segnalazione (senza idFoto, ora abbiamo idSegnalazione AUTO_INCREMENT)
-            $stato = 'In attesa';
-            $tipoSegnalazione = 0; // 0 = smarrimento
-
-            $stmtSegn = $conn->prepare("
-                INSERT INTO SEGNALAZIONI
-                  (idUtente, indirizzo, cap, data, ora,
-                   descrizioneSegnalazione, stato, tipoSegnalazione,
-                   idRicompensa, idOggetto)
-                VALUES (?, ?, ?, CURDATE(), CURTIME(),
-                        ?, ?, ?, ?, ?)
-            ");
-            $stmtSegn->bind_param(
-                "issssiii",
-                $idUtente,
-                $indirizzo,
-                $cap,
-                $descrizione,
-                $stato,
-                $tipoSegnalazione,
-                $idRicompensa,
-                $idOggetto
-            );
-            if (!$stmtSegn->execute()) throw new Exception($stmtSegn->error);
-            $idSegnalazione = $stmtSegn->insert_id;
-            $stmtSegn->close();
-
-            // Inserisci tutte le foto collegate alla segnalazione
-            $stmtFoto = $conn->prepare(
-                "INSERT INTO FOTO (idSegnalazione, nomeFoto) VALUES (?, ?)"
-            );
-            foreach ($uploadedFotoNames as $nomeFoto) {
-                $stmtFoto->bind_param("is", $idSegnalazione, $nomeFoto);
-                if (!$stmtFoto->execute()) throw new Exception($stmtFoto->error);
-            }
-            $stmtFoto->close();
-
-            $conn->commit();
-            $success = "Segnalazione inviata con successo!";
-
-            // Svuota i campi del form dopo il successo
-            $_POST = [];
-
-        }
-        catch (Exception $e) {
-            $conn->rollback();
-            // Rimuovi file caricati in caso di errore
-            foreach ($uploadedFotoNames as $fn) {
-                $path = $uploadDir . $fn;
-                if (file_exists($path)) unlink($path);
-            }
-            $message = "Errore durante l'inserimento: " . htmlspecialchars($e->getMessage());
+        } else {
+            $message = "Errore nel salvataggio della foto.";
         }
     }
 
@@ -208,60 +91,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Invio Segnalazione Smarrimento</title>
-  <link rel="stylesheet" href="segnalazionestyle.css" />
+    <meta charset="UTF-8" />
+    <title>Invia Segnalazione di Smarrimento</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Invio Segnalazione Smarrimento</h1>
+<div class="container login-container">
+    <h2>Invia Segnalazione di Smarrimento</h2>
 
-  <?php if ($message): ?>
-    <div class="message error"><?= htmlspecialchars($message) ?></div>
-  <?php endif; ?>
-  <?php if ($success): ?>
-    <div class="message success"><?= htmlspecialchars($success) ?></div>
-  <?php endif; ?>
+    <?php if ($message): ?>
+        <p class="error"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
-  <div class="form-container">
-    <form method="post" enctype="multipart/form-data" novalidate>
-      <label for="indirizzo">Indirizzo:</label>
-      <input type="text" id="indirizzo" name="indirizzo" required
-             value="<?= htmlspecialchars($_POST['indirizzo'] ?? '') ?>" />
+    <?php if ($success): ?>
+        <p class="success"><?= htmlspecialchars($success) ?></p>
+    <?php endif; ?>
 
-      <label for="cap">CAP:</label>
-      <input type="text" id="cap" name="cap" required maxlength="5" pattern="[0-9]{5}"
-             value="<?= htmlspecialchars($_POST['cap'] ?? '') ?>" />
+    <form method="POST" enctype="multipart/form-data" action="">
+        <label>Indirizzo:<br>
+            <input type="text" name="indirizzo" required value="<?= htmlspecialchars($_POST['indirizzo'] ?? '') ?>" />
+        </label><br><br>
 
-      <label for="citta">Città:</label>
-      <input type="text" id="citta" name="citta" required
-             value="<?= htmlspecialchars($_POST['citta'] ?? '') ?>" />
+        <label>CAP:<br>
+            <input type="text" name="cap" required value="<?= htmlspecialchars($_POST['cap'] ?? '') ?>" />
+        </label><br><br>
 
-      <label for="descrizione">Descrizione segnalazione:</label>
-      <textarea id="descrizione" name="descrizione" rows="4" required><?= htmlspecialchars($_POST['descrizione'] ?? '') ?></textarea>
+        <label>Descrizione:<br>
+            <textarea name="descrizione" rows="4" required><?= htmlspecialchars($_POST['descrizione'] ?? '') ?></textarea>
+        </label><br><br>
 
-      <label for="categoria">Categoria oggetto:</label>
-      <select id="categoria" name="categoria" required>
-        <option value="">-- Seleziona categoria --</option>
-        <option value="1" <?= (($_POST['categoria'] ?? '') == 1) ? 'selected' : '' ?>>Elettronica</option>
-        <option value="2" <?= (($_POST['categoria'] ?? '') == 2) ? 'selected' : '' ?>>Abbigliamento</option>
-        <option value="3" <?= (($_POST['categoria'] ?? '') == 3) ? 'selected' : '' ?>>Documenti</option>
-      </select>
+        <label>Categoria:<br>
+            <select name="categoria" required>
+                <option value="">-- Seleziona --</option>
+                <option value="1" <?= (($_POST['categoria'] ?? '') == 1 ? 'selected' : '') ?>>Elettronica</option>
+                <option value="2" <?= (($_POST['categoria'] ?? '') == 2 ? 'selected' : '') ?>>Abbigliamento</option>
+                <!-- Aggiungi altre categorie se serve -->
+            </select>
+        </label><br><br>
 
-      <label for="descrizioneOggetto">Descrizione oggetto:</label>
-      <input type="text" id="descrizioneOggetto" name="descrizioneOggetto" required
-             value="<?= htmlspecialchars($_POST['descrizioneOggetto'] ?? '') ?>" />
+        <label>Foto (obbligatoria):<br>
+            <input type="file" name="foto" accept="image/*" required />
+        </label><br><br>
 
-      <label for="ricompensa">Ricompensa (opzionale):</label>
-      <input type="text" id="ricompensa" name="ricompensa" pattern="^\d+(\.\d{1,2})?$" 
-             placeholder="Importo es. 50.00"
-             value="<?= htmlspecialchars($_POST['ricompensa'] ?? '') ?>" />
-
-      <label for="foto">Foto (puoi selezionare più file):</label>
-      <input type="file" id="foto" name="foto[]" accept="image/*" multiple required />
-
-      <input type="submit" value="Invia segnalazione" />
-      <button type="button" onclick="window.location.href='dashboard_utente.php'">Torna alla Dashboard</button>
+        <button type="submit" class="btn">Invia Segnalazione</button>
     </form>
-  </div>
+
+    <p><a href="dashboard.php">← Torna alla Dashboard</a></p>
+</div>
 </body>
 </html>
