@@ -138,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="button" class="btn" onclick="window.location.href='dashboard_utente.php'">Torna alla Dashboard</button>
     </form>
 
+    <p><a href="dashboard.php">Torna alla Dashboard</a></p>
 </div>
 </body>
 </html>
