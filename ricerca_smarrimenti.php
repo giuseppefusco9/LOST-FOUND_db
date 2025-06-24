@@ -25,21 +25,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $stmt = $conn->prepare("
-    SELECT s.*, l.tipo AS tipoLuogo, c.tipoCategoria, f.nomeFoto, r.importo
+    SELECT s.*, l.citta AS tipoLuogo, c.tipoCategoria, f.nomeFoto, r.importo
     FROM segnalazioni s
     JOIN luoghi l ON s.cap = l.cap AND s.indirizzo = l.indirizzo
     JOIN oggetti o ON s.idOggetto = o.idOggetto
     JOIN categorie c ON o.idCategoria = c.idCategoria
-    JOIN foto f ON s.idFoto = f.idFoto
+    JOIN foto f ON s.idSegnalazione = f.idSegnalazione
     LEFT JOIN ricompense r ON s.idRicompensa = r.idRicompensa
     WHERE s.tipoSegnalazione = 0
-    AND l.tipo LIKE ?
+    AND l.citta LIKE ?
     AND c.tipoCategoria LIKE ?
 ");
 $stmt->bind_param("ss", $tipo_luogo, $tipo_categoria);
 $stmt->execute();
 $result = $stmt->get_result();
-$userType = $isAdmin ? 'admin' : 'user';
+$userType = $isAdmin ? 'admin' : 'utente';
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +78,7 @@ $userType = $isAdmin ? 'admin' : 'user';
     <h1>🔍 Oggetti Smarriti</h1>
     <form method="post">
         <label>Luogo:</label>
-        <input type="text" name="luogo" placeholder="Es. Parco, Biblioteca">
+        <input type="text" name="luogo" placeholder="Es. Milano, Napoli">
         <label>Categoria:</label>
         <select name="categoria">
             <option value="">-- Tutte --</option>
