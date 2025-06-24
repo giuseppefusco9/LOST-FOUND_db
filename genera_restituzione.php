@@ -62,6 +62,9 @@ $conn->close();
         <label for="indirizzo">Indirizzo:</label>
         <input type="text" name="indirizzo" id="indirizzo" required>
 
+        <label for="cap">Città:</label>
+        <input type="text" name="citta" id="citta" required>
+
         <label for="cap">CAP:</label>
         <input type="text" name="cap" id="cap" required>
 
