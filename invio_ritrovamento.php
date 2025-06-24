@@ -161,55 +161,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Invio Segnalazione Ritrovamento</title>
-  <link rel="stylesheet" href="segnalazionestyle.css" />
+    <meta charset="UTF-8" />
+    <title>Invia Segnalazione di Ritrovamento</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Invio Segnalazione Ritrovamento</h1>
+<div class="container login-container">
+    <h2>Invia Segnalazione di Ritrovamento</h2>
 
-  <?php if ($message): ?>
-    <div class="message error"><?= $message ?></div>
-  <?php endif; ?>
-  <?php if ($success): ?>
-    <div class="message success"><?= $success ?></div>
-  <?php endif; ?>
+    <?php if ($message): ?>
+        <p class="error"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
-  <div class="form-container">
-    <form method="post" enctype="multipart/form-data" novalidate>
-      <label for="indirizzo">Indirizzo:</label>
-      <input type="text" id="indirizzo" name="indirizzo" required
-             value="<?= $success ? '' : htmlspecialchars($_POST['indirizzo'] ?? '') ?>" />
+    <?php if ($success): ?>
+        <p class="success"><?= htmlspecialchars($success) ?></p>
+    <?php endif; ?>
 
-      <label for="cap">CAP:</label>
-      <input type="text" id="cap" name="cap" required maxlength="5" pattern="[0-9]{5}"
-             value="<?= $success ? '' : htmlspecialchars($_POST['cap'] ?? '') ?>" />
+    <form method="POST" enctype="multipart/form-data" action="">
+        <label>Indirizzo:<br>
+            <input type="text" name="indirizzo" required value="<?= htmlspecialchars($_POST['indirizzo'] ?? '') ?>" />
+        </label><br><br>
 
-      <label for="citta">Città:</label>
-      <input type="text" id="citta" name="citta" required
-             value="<?= $success ? '' : htmlspecialchars($_POST['citta'] ?? '') ?>" />
+        <label>CAP:<br>
+            <input type="text" name="cap" required value="<?= htmlspecialchars($_POST['cap'] ?? '') ?>" />
+        </label><br><br>
 
-      <label for="descrizione">Descrizione segnalazione:</label>
-      <textarea id="descrizione" name="descrizione" rows="4" required><?= $success ? '' : htmlspecialchars($_POST['descrizione'] ?? '') ?></textarea>
+        <label>Descrizione:<br>
+            <textarea name="descrizione" rows="4" required><?= htmlspecialchars($_POST['descrizione'] ?? '') ?></textarea>
+        </label><br><br>
 
-      <label for="categoria">Categoria oggetto:</label>
-      <select id="categoria" name="categoria" required>
-        <option value="">-- Seleziona categoria --</option>
-        <option value="1" <?= ($success ? '' : (($_POST['categoria']??'')==1 ? 'selected' : '')) ?>>Elettronica</option>
-        <option value="2" <?= ($success ? '' : (($_POST['categoria']??'')==2 ? 'selected' : '')) ?>>Abbigliamento</option>
-        <option value="3" <?= ($success ? '' : (($_POST['categoria']??'')==3 ? 'selected' : '')) ?>>Documenti</option>
-      </select>
+        <label>Categoria:<br>
+            <select name="categoria" required>
+                <option value="">-- Seleziona categoria --</option>
+                <option value="1" <?= ($success ? '' : (($_POST['categoria']??'')==1 ? 'selected' : '')) ?>>Elettronica</option>
+                <option value="2" <?= ($success ? '' : (($_POST['categoria']??'')==2 ? 'selected' : '')) ?>>Abbigliamento</option>
+                <option value="3" <?= ($success ? '' : (($_POST['categoria']??'')==3 ? 'selected' : '')) ?>>Accessori</option>
+                <option value="4" <?= ($success ? '' : (($_POST['categoria']??'')==4 ? 'selected' : '')) ?>>Altro</option>
+            </select>
+        </label><br><br>
 
-      <label for="descrizioneOggetto">Descrizione oggetto:</label>
-      <input type="text" id="descrizioneOggetto" name="descrizioneOggetto" required
-             value="<?= $success ? '' : htmlspecialchars($_POST['descrizioneOggetto'] ?? '') ?>" />
+        <label>Foto (obbligatoria):<br>
+            <input type="file" name="foto" accept="image/*" required />
+        </label><br><br>
 
-      <label for="foto">Foto (puoi selezionare più file):</label>
-      <input type="file" id="foto" name="foto[]" accept="image/*" multiple required />
-
-      <input type="submit" value="Invia segnalazione" />
-      <button type="button" onclick="window.location.href='dashboard_utente.php'">Torna alla Dashboard</button>
+        <button type="submit" class="btn">Invia Segnalazione</button>
+        <button type="button" class="btn" onclick="window.location.href='dashboard_utente.php'">Torna alla Dashboard</button>
     </form>
-  </div>
+
+</div>
 </body>
 </html>

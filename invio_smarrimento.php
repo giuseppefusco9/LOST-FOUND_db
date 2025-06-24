@@ -122,10 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Categoria:<br>
             <select name="categoria" required>
-                <option value="">-- Seleziona --</option>
-                <option value="1" <?= (($_POST['categoria'] ?? '') == 1 ? 'selected' : '') ?>>Elettronica</option>
-                <option value="2" <?= (($_POST['categoria'] ?? '') == 2 ? 'selected' : '') ?>>Abbigliamento</option>
-                <!-- Aggiungi altre categorie se serve -->
+                <option value="">-- Seleziona categoria --</option>
+                <option value="1" <?= ($success ? '' : (($_POST['categoria']??'')==1 ? 'selected' : '')) ?>>Elettronica</option>
+                <option value="2" <?= ($success ? '' : (($_POST['categoria']??'')==2 ? 'selected' : '')) ?>>Abbigliamento</option>
+                <option value="3" <?= ($success ? '' : (($_POST['categoria']??'')==3 ? 'selected' : '')) ?>>Accessori</option>
+                <option value="4" <?= ($success ? '' : (($_POST['categoria']??'')==4 ? 'selected' : '')) ?>>Altro</option>
             </select>
         </label><br><br>
 
@@ -134,9 +135,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </label><br><br>
 
         <button type="submit" class="btn">Invia Segnalazione</button>
+        <button type="button" class="btn" onclick="window.location.href='dashboard_utente.php'">Torna alla Dashboard</button>
     </form>
 
-    <p><a href="dashboard.php">← Torna alla Dashboard</a></p>
 </div>
 </body>
 </html>
