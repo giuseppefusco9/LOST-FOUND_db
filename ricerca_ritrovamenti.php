@@ -14,17 +14,21 @@ if ($conn->connect_error) die("Connessione fallita");
 
 $tipo_luogo = "%";
 $tipo_categoria = "%";
+$soloMieSegnalazioni = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!empty($_POST['luogo'])) {
         $tipo_luogo = "%" . $_POST['luogo'] . "%";
     }
-    if ($_POST['categoria'] !== "") {
+    if (isset($_POST['categoria']) && $_POST['categoria'] !== "") {
         $tipo_categoria = $_POST['categoria'];
+    }
+    if (isset($_POST['mieSegnalazioni']) && $_POST['mieSegnalazioni'] == "1" && $isUser && !$isAdmin) {
+        $soloMieSegnalazioni = true;
     }
 }
 
-$stmt = $conn->prepare("
+$query = "
     SELECT s.*, l.citta AS tipoLuogo, c.tipoCategoria, f.nomeFoto, r.importo
     FROM segnalazioni s
     JOIN luoghi l ON s.cap = l.cap AND s.indirizzo = l.indirizzo
@@ -35,8 +39,20 @@ $stmt = $conn->prepare("
     WHERE s.tipoSegnalazione = 1
     AND l.citta LIKE ?
     AND c.tipoCategoria LIKE ?
-");
-$stmt->bind_param("ss", $tipo_luogo, $tipo_categoria);
+";
+
+if ($soloMieSegnalazioni) {
+    $query .= " AND s.idUtente = ? ";
+}
+
+$stmt = $conn->prepare($query);
+
+if ($soloMieSegnalazioni) {
+    $stmt->bind_param("ssi", $tipo_luogo, $tipo_categoria, $_SESSION['user_id']);
+} else {
+    $stmt->bind_param("ss", $tipo_luogo, $tipo_categoria);
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
 $userType = $isAdmin ? 'admin' : 'utente';
@@ -65,11 +81,24 @@ $userType = $isAdmin ? 'admin' : 'utente';
         .segnalazioni-list {
             margin-top: 20px;
         }
+        .btn-mie-segnalazioni {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="container login-container">
     <h1>🔎 Visualizza Oggetti Ritrovati</h1>
+
+    <?php if ($isUser && !$isAdmin): ?>
+        <form method="post" style="margin-bottom:10px;">
+            <input type="hidden" name="mieSegnalazioni" value="<?= $soloMieSegnalazioni ? "0" : "1" ?>" />
+            <button type="submit" class="btn btn-mie-segnalazioni">
+                <?= $soloMieSegnalazioni ? "Tutte le segnalazioni" : "Le mie segnalazioni" ?>
+            </button>
+        </form>
+    <?php endif; ?>
+
     <form method="post">
         <label>Luogo:</label>
         <input type="text" name="luogo" placeholder="Es. Milano, Napoli">
@@ -95,7 +124,8 @@ $userType = $isAdmin ? 'admin' : 'utente';
                     <strong>Luogo:</strong> <?= htmlspecialchars($row['tipoLuogo']) ?> |
                     <strong>Categoria:</strong> <?= htmlspecialchars($row['tipoCategoria']) ?> |
                     <strong>Data:</strong> <?= htmlspecialchars($row['data']) ?> |
-                    <strong>Descrizione:</strong> <?= htmlspecialchars($row['descrizioneSegnalazione']) ?>
+                    <strong>Descrizione:</strong> <?= htmlspecialchars($row['descrizioneSegnalazione']) ?> |
+                    <strong>Stato:</strong> <?= htmlspecialchars($row['stato']) ?>
                     <?php if (!empty($row['nomeFoto'])): ?>
                         <div>
                             <img src="foto/foto_ritrovamenti/<?= htmlspecialchars($row['nomeFoto']) ?>" alt=" " class="segnalazione-foto">

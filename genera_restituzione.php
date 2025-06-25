@@ -17,21 +17,43 @@ $messaggio = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Recupero dati dal form
     $indirizzo = $_POST['indirizzo'] ?? '';
+    $citta = $_POST['citta'] ?? '';
     $cap = $_POST['cap'] ?? '';
     $idSegnalazione1 = $_POST['idSegnalazione1'] ?? '';
     $idSegnalazione2 = $_POST['idSegnalazione2'] ?? '';
     $idAmministratore = $_SESSION['admin_id'];
 
     // Validazione base
-    if ($indirizzo && $cap && $idSegnalazione1 && $idSegnalazione2) {
-        // Inserimento
+    if ($indirizzo && $citta && $cap && $idSegnalazione1 && $idSegnalazione2) {
+
+        // **Controllo se il luogo esiste già**
+        $checkLuogo = $conn->prepare("SELECT indirizzo FROM LUOGHI WHERE indirizzo = ? AND cap = ?");
+        $checkLuogo->bind_param("ss", $indirizzo, $cap);
+        $checkLuogo->execute();
+        $resultLuogo = $checkLuogo->get_result();
+
+        if ($resultLuogo->num_rows === 0) {
+            // Luogo non esiste, lo inserisco
+            $insertLuogo = $conn->prepare("INSERT INTO LUOGHI (indirizzo, cap, citta) VALUES (?, ?, ?)");
+            $insertLuogo->bind_param("sss", $indirizzo, $cap, $citta);
+            $insertLuogo->execute();
+            $insertLuogo->close();
+        }
+        $checkLuogo->close();
+
+        // Inserimento restituzione
         $stmt = $conn->prepare("
             INSERT INTO restituzioni (data, ora, indirizzo, cap, idAmministratore, idSegnalazione1, idSegnalazione2)
             VALUES (CURRENT_DATE(), CURRENT_TIME(), ?, ?, ?, ?, ?)
         ");
-        $stmt->bind_param("sssii", $indirizzo, $cap, $idAmministratore, $idSegnalazione1, $idSegnalazione2);
+        $stmt->bind_param("ssiii", $indirizzo, $cap, $idAmministratore, $idSegnalazione1, $idSegnalazione2);
 
         if ($stmt->execute()) {
+            $update = $conn->prepare("UPDATE segnalazioni SET stato = 'restituito' WHERE idSegnalazione = ? OR idSegnalazione = ?");
+            $update->bind_param("ii", $idSegnalazione1, $idSegnalazione2);
+            $update->execute();
+            $update->close();
+
             $messaggio = "✅ Restituzione inserita con successo!";
         } else {
             $messaggio = "❌ Errore durante l'inserimento: " . $stmt->error;
@@ -62,7 +84,7 @@ $conn->close();
         <label for="indirizzo">Indirizzo:</label>
         <input type="text" name="indirizzo" id="indirizzo" required>
 
-        <label for="cap">Città:</label>
+        <label for="citta">Città:</label>
         <input type="text" name="citta" id="citta" required>
 
         <label for="cap">CAP:</label>

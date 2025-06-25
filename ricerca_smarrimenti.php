@@ -13,18 +13,23 @@ $conn = new mysqli("localhost", "root", "", "lostfound_db");
 if ($conn->connect_error) die("Connessione fallita");
 
 $tipo_luogo = "%";
-$tipo_categoria = "%";
+$tipo_categoria = "%"; // default per LIKE
+$soloMieSegnalazioni = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!empty($_POST['luogo'])) {
         $tipo_luogo = "%" . $_POST['luogo'] . "%";
     }
-    if ($_POST['categoria'] !== "") {
+    if (isset($_POST['categoria']) && $_POST['categoria'] !== "") {
+        // se categoria selezionata, filtro esatto: uso valore categoria senza %
         $tipo_categoria = $_POST['categoria'];
+    }
+    if (isset($_POST['mieSegnalazioni']) && $_POST['mieSegnalazioni'] == "1" && $isUser && !$isAdmin) {
+        $soloMieSegnalazioni = true;
     }
 }
 
-$stmt = $conn->prepare("
+$query = "
     SELECT s.*, l.citta AS tipoLuogo, c.tipoCategoria, f.nomeFoto, r.importo
     FROM segnalazioni s
     JOIN luoghi l ON s.cap = l.cap AND s.indirizzo = l.indirizzo
@@ -35,8 +40,20 @@ $stmt = $conn->prepare("
     WHERE s.tipoSegnalazione = 0
     AND l.citta LIKE ?
     AND c.tipoCategoria LIKE ?
-");
-$stmt->bind_param("ss", $tipo_luogo, $tipo_categoria);
+";
+
+if ($soloMieSegnalazioni) {
+    $query .= " AND s.idUtente = ? ";
+}
+
+$stmt = $conn->prepare($query);
+
+if ($soloMieSegnalazioni) {
+    $stmt->bind_param("ssi", $tipo_luogo, $tipo_categoria, $_SESSION['user_id']);
+} else {
+    $stmt->bind_param("ss", $tipo_luogo, $tipo_categoria);
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
 $userType = $isAdmin ? 'admin' : 'utente';
@@ -71,11 +88,29 @@ $userType = $isAdmin ? 'admin' : 'utente';
             text-decoration: none;
             border-radius: 4px;
         }
+        /* Solo aggiunta stile per il nuovo bottone senza toccare altro */
+        .btn-mie-segnalazioni {
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="container login-container">
     <h1>🔍 Oggetti Smarriti</h1>
+
+    <?php if ($isUser && !$isAdmin): ?>
+        <?php 
+        $isMieSegnalazioniAttivo = (isset($_POST['mieSegnalazioni']) && $_POST['mieSegnalazioni'] == "1");
+        ?>
+        <form method="post" style="margin-bottom:10px;">
+            <input type="hidden" name="mieSegnalazioni" value="<?= $isMieSegnalazioniAttivo ? "0" : "1" ?>" />
+            <button type="submit" class="btn btn-mie-segnalazioni">
+                <?= $isMieSegnalazioniAttivo ? "Tutte le segnalazioni" : "Le mie segnalazioni" ?>
+            </button>
+        </form>
+    <?php endif; ?>
+
+
     <form method="post">
         <label>Luogo:</label>
         <input type="text" name="luogo" placeholder="Es. Milano, Napoli">
@@ -101,12 +136,12 @@ $userType = $isAdmin ? 'admin' : 'utente';
                     <strong>Luogo:</strong> <?= htmlspecialchars($row['tipoLuogo']) ?> |
                     <strong>Categoria:</strong> <?= htmlspecialchars($row['tipoCategoria']) ?> |
                     <strong>Data:</strong> <?= htmlspecialchars($row['data']) ?> |
-                    <strong>Descrizione:</strong> <?= htmlspecialchars($row['descrizioneSegnalazione']) ?>
-                    
+                    <strong>Descrizione:</strong> <?= htmlspecialchars($row['descrizioneSegnalazione']) ?> |
+                    <strong>Stato:</strong> <?= htmlspecialchars($row['stato']) ?>
                     <?php if (!empty($row['importo'])): ?>
                         | <strong>Ricompensa:</strong> <?= number_format($row['importo'], 2) ?> €
                     <?php endif; ?>
-                    
+
                     <?php if (!empty($row['nomeFoto'])): ?>
                         <div>
                             <img src="foto/foto_smarrimenti/<?= htmlspecialchars($row['nomeFoto']) ?>" 
@@ -120,8 +155,8 @@ $userType = $isAdmin ? 'admin' : 'utente';
     <?php else: ?>
         <p>Nessun oggetto smarrito trovato.</p>
     <?php endif; ?>
-    
-    <a href="dashboard_<?= $userType ?>.php" class="btn" type="submit">Torna alla Dashboard</a>
+
+    <a href="dashboard_<?= $userType ?>.php" class="btn">Torna alla Dashboard</a>
 </div>
 </body>
 </html>
