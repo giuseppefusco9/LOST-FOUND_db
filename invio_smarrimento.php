@@ -186,6 +186,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="file" name="foto" accept="image/*" required />
         </label><br><br>
 
+        <label>Ricompensa (facoltativa, in euro):<br>
+        <input type="number" name="ricompensa" step="0.01" min="0" placeholder="Es. 10.00" 
+            value="<?= htmlspecialchars($_POST['ricompensa'] ?? '') ?>" />
+        </label><br><br>
+
         <button type="submit" class="btn">Invia Segnalazione</button>
         <button type="button" class="btn" onclick="window.location.href='dashboard_utente.php'">Torna alla Dashboard</button>
     </form>

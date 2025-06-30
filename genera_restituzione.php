@@ -49,19 +49,60 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $stmt->bind_param("ssiii", $indirizzo, $cap, $idAmministratore, $idSegnalazione1, $idSegnalazione2);
 
         if ($stmt->execute()) {
-            $update = $conn->prepare("UPDATE segnalazioni SET stato = 'restituito' WHERE idSegnalazione = ? OR idSegnalazione = ?");
-            $update->bind_param("ii", $idSegnalazione1, $idSegnalazione2);
-            $update->execute();
-            $update->close();
+        // Aggiorna lo stato delle due segnalazioni
+        $update = $conn->prepare("UPDATE segnalazioni SET stato = 'restituito' WHERE idSegnalazione = ? OR idSegnalazione = ?");
+        $update->bind_param("ii", $idSegnalazione1, $idSegnalazione2);
+        $update->execute();
+        $update->close();
 
-            $messaggio = "✅ Restituzione inserita con successo!";
+        // Recupera l'importo della ricompensa associata alla segnalazione di smarrimento (idSegnalazione1)
+        $ricompensaQuery = $conn->prepare("
+            SELECT r.importo 
+            FROM segnalazioni s
+            JOIN ricompense r ON s.idRicompensa = r.idRicompensa
+            WHERE s.idSegnalazione = ?
+        ");
+        $ricompensaQuery->bind_param("i", $idSegnalazione1);
+        $ricompensaQuery->execute();
+        $ricompensaResult = $ricompensaQuery->get_result();
+
+        if ($ricompensaResult->num_rows > 0) {
+            $ricompensa = $ricompensaResult->fetch_assoc()['importo'];
+            $ricompensaQuery->close();
+
+            // Trova l'utente che ha fatto la segnalazione di ritrovamento (idSegnalazione2)
+            $utenteQuery = $conn->prepare("SELECT idUtente FROM segnalazioni WHERE idSegnalazione = ?");
+            $utenteQuery->bind_param("i", $idSegnalazione2);
+            $utenteQuery->execute();
+            $utenteResult = $utenteQuery->get_result();
+
+            if ($utenteResult->num_rows > 0) {
+                $idUtenteRitrovatore = $utenteResult->fetch_assoc()['idUtente'];
+                $utenteQuery->close();
+
+                // Accredita la ricompensa al portafoglio dell'utente ritrovatore
+                $updateSaldo = $conn->prepare("UPDATE portafogli SET saldo = saldo + ? WHERE idUtente = ?");
+                $updateSaldo->bind_param("di", $ricompensa, $idUtenteRitrovatore);
+                $updateSaldo->execute();
+                $updateSaldo->close();
+            } else {
+                $messaggio = "⚠️ Utente ritrovatore non trovato.";
+            }
         } else {
-            $messaggio = "❌ Errore durante l'inserimento: " . $stmt->error;
+            $messaggio = "⚠️ Nessuna ricompensa associata alla segnalazione di smarrimento.";
         }
+
+        if (empty($messaggio)) {
+            $messaggio = "Restituzione inserita con successo e ricompensa accreditata!";
+        }
+        } else {
+            $messaggio = "Errore durante l'inserimento: " . $stmt->error;
+        }
+
 
         $stmt->close();
     } else {
-        $messaggio = "⚠️ Tutti i campi sono obbligatori.";
+        $messaggio = "Tutti i campi sono obbligatori.";
     }
 }
 $conn->close();
