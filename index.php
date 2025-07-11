@@ -72,7 +72,7 @@
 <body>
 
   <div class="login-box">
-    <h1>Benvenuto</h1>
+    <h1>LOST&FOUND</h1>
     <a href="registrazione_utente.php" class="btn">Registrati</a>
     <a href="login_utente.php" class="btn">Accedi</a>
     <a href="login_admin.php" class="admin-link">Sei un amministratore?</a>
