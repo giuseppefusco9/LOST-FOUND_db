@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 $query = "
-    SELECT s.*, l.citta AS tipoLuogo, c.tipoCategoria, f.nomeFoto, r.importo
+    SELECT s.*, l.citta AS tipoLuogo, l.indirizzo, c.tipoCategoria, f.nomeFoto, r.importo
     FROM segnalazioni s
     JOIN luoghi l ON s.cap = l.cap AND s.indirizzo = l.indirizzo
     JOIN oggetti o ON s.idOggetto = o.idOggetto
@@ -134,6 +134,7 @@ $userType = $isAdmin ? 'admin' : 'utente';
                         <strong>ID Segnalazione:</strong> <?= htmlspecialchars($row['idSegnalazione']) ?> |
                     <?php endif; ?>
                     <strong>Luogo:</strong> <?= htmlspecialchars($row['tipoLuogo']) ?> |
+                    <strong>Indirizzo:</strong> <?= htmlspecialchars($row['indirizzo']) ?> |
                     <strong>Categoria:</strong> <?= htmlspecialchars($row['tipoCategoria']) ?> |
                     <strong>Data:</strong> <?= htmlspecialchars($row['data']) ?> |
                     <strong>Descrizione:</strong> <?= htmlspecialchars($row['descrizioneSegnalazione']) ?> |
